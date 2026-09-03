@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>个人主页</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top">· 我的主页</a>
+      <nav class="nav">
+        <a href="#about">关于</a>
+        <a href="#works">作品</a>
+        <a href="#music">音乐</a>
+        <a href="#features">小功能</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero：昵称 + 格言 + 头像 -->
+    <section id="top" class="hero">
+      <div class="container">
+        <div id="avatar" class="avatar"></div>
+        <h1 id="nickname">昵称</h1>
+        <p id="motto" class="motto">个人格言</p>
+        <p id="intro" class="intro"></p>
+      </div>
+    </section>
+
+    <!-- 关于我：爱好 -->
+    <section id="about" class="section">
+      <div class="container">
+        <h2 class="section-title">关于我</h2>
+        <div id="hobbies" class="hobbies"></div>
+      </div>
+    </section>
+
+    <!-- 作品库：GitHub 仓库 -->
+    <section id="works" class="section">
+      <div class="container">
+        <h2 class="section-title">作品库</h2>
+        <div id="repos" class="repos">
+          <p class="placeholder">加载中…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 音乐播放器 -->
+    <section id="music" class="section">
+      <div class="container">
+        <h2 class="section-title">音乐</h2>
+        <div class="player">
+          <div class="player-cover">
+            <div id="cover" class="cover">♪</div>
+            <div>
+              <div id="song-title" class="song-title">未播放</div>
+              <div id="song-artist" class="song-artist">—</div>
+            </div>
+          </div>
+          <div class="player-controls">
+            <button id="btn-prev" class="ctrl" title="上一首">⏮</button>
+            <button id="btn-play" class="ctrl play" title="播放/暂停">▶</button>
+            <button id="btn-next" class="ctrl" title="下一首">⏭</button>
+          </div>
+          <div class="progress">
+            <span id="cur">0:00</span>
+            <input type="range" id="seek" min="0" max="100" value="0" />
+            <span id="dur">0:00</span>
+          </div>
+          <div class="volume">
+            <span>🔊</span>
+            <input type="range" id="volume" min="0" max="100" value="80" />
+          </div>
+        </div>
+        <ul id="playlist" class="playlist"></ul>
+      </div>
+    </section>
+
+    <!-- 小功能：后续上线的小工具 -->
+    <section id="features" class="section">
+      <div class="container">
+        <h2 class="section-title">小功能</h2>
+        <div id="feature-list" class="features"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© <span id="year"></span> <span id="footer-name"></span> · 由静态页面构建</p>
+    </div>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/github.js"></script>
+  <script src="js/player.js"></script>
+</body>
+</html>
