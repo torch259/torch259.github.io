@@ -18,12 +18,7 @@ const SITE = {
 };
 
 /* ---------- 爱好 ---------- */
-const HOBBIES = [
-  { name: "编程", icon: "💻" },
-  { name: "音乐", icon: "🎵" },
-  { name: "阅读", icon: "📚" },
-  { name: "摄影", icon: "📷" },
-];
+const HOBBIES = [];
 
 /* ---------- GitHub（作品库） ---------- */
 // 填你的用户名，如 "torvalds"；留空时作品库会显示提示
