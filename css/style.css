@@ -104,6 +104,13 @@ code {
 .volume { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
 .volume input[type="range"] { width: 120px; }
 
+/* 暂停/空状态：隐藏歌曲内部信息（封面/歌名/歌手/进度/音量） */
+.player.idle .player-cover,
+.player.idle .progress,
+.player.idle .volume { display: none; }
+.player.idle .player-controls { margin-bottom: 0; }
+.player.empty { display: none; }
+
 /* 播放列表 */
 .playlist { list-style: none; margin: 0; padding: 0; }
 .song {

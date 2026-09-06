@@ -6,6 +6,7 @@
   var index = -1;
 
   var el = {
+    player:   document.querySelector(".player"),
     cover:    document.getElementById("cover"),
     title:    document.getElementById("song-title"),
     artist:   document.getElementById("song-artist"),
@@ -19,6 +20,12 @@
     playlist: document.getElementById("playlist"),
   };
 
+  /* 播放 / 暂停两种视觉状态：暂停时隐藏歌曲内部信息 */
+  function setPlaying(playing) {
+    el.player.classList.toggle("idle", !playing);
+    el.play.textContent = playing ? "⏸" : "▶";
+  }
+
   function renderPlaylist() {
     el.playlist.innerHTML = list.map(function (song, i) {
       return (
@@ -28,10 +35,6 @@
         "</li>"
       );
     }).join("");
-  }
-
-  function setPlayState(playing) {
-    el.play.textContent = playing ? "⏸" : "▶";
   }
 
   function load(i) {
@@ -47,7 +50,7 @@
       el.cover.textContent = "♪";
     }
     renderPlaylist();
-    audio.play().catch(function () { setPlayState(false); });
+    audio.play().catch(function () { setPlaying(false); });
   }
 
   function playPause() {
@@ -67,8 +70,8 @@
   el.next.addEventListener("click", function () { next(1); });
   el.prev.addEventListener("click", function () { next(-1); });
 
-  audio.addEventListener("play", function () { setPlayState(true); });
-  audio.addEventListener("pause", function () { setPlayState(false); });
+  audio.addEventListener("play", function () { setPlaying(true); });
+  audio.addEventListener("pause", function () { setPlaying(false); });
   audio.addEventListener("ended", function () { next(1); });
 
   audio.addEventListener("timeupdate", function () {
@@ -83,11 +86,17 @@
   });
 
   audio.addEventListener("error", function () {
-    if (index >= 0 && list[index].src) {
-      el.title.textContent = "加载失败：" + list[index].title;
-      el.artist.textContent = "请检查音频文件路径是否存在（" + list[index].src + "）";
-      el.dur.textContent = "0:00";
-    }
+    /* 加载失败时回到暂停态，不暴露内部文件路径 */
+    audio.pause();
+    index = -1;
+    el.title.textContent = "";
+    el.artist.textContent = "";
+    el.cover.textContent = "♪";
+    el.cur.textContent = "0:00";
+    el.dur.textContent = "0:00";
+    el.seek.value = 0;
+    renderPlaylist();
+    setPlaying(false);
   });
 
   el.seek.addEventListener("input", function () {
@@ -107,8 +116,10 @@
 
   /* 初始化 */
   if (!list.length) {
-    el.playlist.innerHTML = '<p class="placeholder">暂无歌曲，请在 <code>js/config.js</code> 的 <code>MUSIC</code> 里添加。</p>';
+    el.player.classList.add("empty");
+    el.playlist.innerHTML = '<p class="placeholder">暂无歌曲。</p>';
   } else {
     renderPlaylist();
   }
+  setPlaying(false);
 })();

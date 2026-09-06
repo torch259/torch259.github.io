@@ -4,8 +4,7 @@
   var container = document.getElementById("repos");
 
   if (!GITHUB_USERNAME) {
-    container.innerHTML =
-      '<p class="placeholder">在 <code>js/config.js</code> 里填写 <code>GITHUB_USERNAME</code> 后，这里会自动展示你的 GitHub 公开仓库。</p>';
+    container.innerHTML = '<p class="placeholder">暂无作品。</p>';
     return;
   }
 
@@ -25,7 +24,7 @@
         .slice(0, 12);
 
       if (!list.length) {
-        container.innerHTML = '<p class="placeholder">没有找到公开仓库。</p>';
+        container.innerHTML = '<p class="placeholder">暂无作品。</p>';
         return;
       }
 
@@ -45,7 +44,7 @@
       }).join("");
     })
     .catch(function () {
-      container.innerHTML = '<p class="placeholder">加载失败，请检查用户名是否正确或网络是否可用。</p>';
+      container.innerHTML = '<p class="placeholder">加载失败，请稍后重试。</p>';
     });
 })();
 
