@@ -9,49 +9,87 @@
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="#top">· 我的主页</a>
-      <nav class="nav">
-        <a href="#about">关于</a>
-        <a href="#works">作品</a>
-        <a href="#music">音乐</a>
-        <a href="#features">小功能</a>
+      <a class="brand" href="#/home">· 我的主页</a>
+      <nav class="nav" id="site-nav">
+        <a href="#/home"  data-view="home">首页</a>
+        <a href="#/about" data-view="about">关于</a>
+        <a href="#/works" data-view="works">作品</a>
+        <a href="#/music" data-view="music">音乐</a>
+        <a href="#/tools" data-view="tools" id="nav-tools">小工具</a>
       </nav>
     </div>
   </header>
 
   <main>
-    <!-- Hero：昵称 + 格言 + 头像 -->
-    <section id="top" class="hero">
-      <div class="container">
-        <div id="avatar" class="avatar"></div>
-        <h1 id="nickname">昵称</h1>
-        <p id="motto" class="motto">个人格言</p>
-        <p id="intro" class="intro"></p>
+    <!-- ============================================================
+         首页：个人名片 + 实时时钟/日历（总览层）
+         ============================================================ -->
+    <section id="view-home" class="view active" data-title="首页">
+      <div class="container home-grid">
+        <!-- 左：名片 -->
+        <div class="hero card">
+          <div id="avatar" class="avatar"></div>
+          <h1 id="nickname">昵称</h1>
+          <p id="motto" class="motto">个人格言</p>
+          <p id="intro" class="intro"></p>
+        </div>
+
+        <!-- 右：时间 + 日历 -->
+        <aside class="home-widgets">
+          <div id="clock" class="widget clock-widget" aria-label="实时时钟"></div>
+          <div id="calendar" class="widget calendar-widget" aria-label="日历"></div>
+        </aside>
+      </div>
+
+      <!-- 模块入口卡片：让首页成为"总览"，各模块独立成页 -->
+      <div class="container module-block">
+        <h2 class="section-title">模块入口</h2>
+        <div id="quick-links" class="quick-links"></div>
       </div>
     </section>
 
-    <!-- 关于我：爱好 -->
-    <section id="about" class="section">
+    <!-- ============================================================
+         关于我
+         ============================================================ -->
+    <section id="view-about" class="view" data-title="关于我">
       <div class="container">
-        <h2 class="section-title">关于我</h2>
-        <div id="hobbies" class="hobbies"></div>
+        <div class="page-head">
+          <h1 class="page-title">关于我</h1>
+          <p class="page-desc">一点自我介绍，还有我的爱好。</p>
+        </div>
+        <div class="card about-card">
+          <p id="about-intro" class="about-intro"></p>
+          <h2 class="section-title">爱好</h2>
+          <div id="hobbies" class="hobbies"></div>
+        </div>
       </div>
     </section>
 
-    <!-- 作品库：GitHub 仓库 -->
-    <section id="works" class="section">
+    <!-- ============================================================
+         作品库
+         ============================================================ -->
+    <section id="view-works" class="view" data-title="作品库">
       <div class="container">
-        <h2 class="section-title">作品库</h2>
+        <div class="page-head">
+          <h1 class="page-title">作品库</h1>
+          <p class="page-desc">我的 GitHub 公开项目（在 <code>js/config.js</code> 里填用户名即可接入）。</p>
+        </div>
         <div id="repos" class="repos">
           <p class="placeholder">加载中…</p>
         </div>
       </div>
     </section>
 
-    <!-- 音乐播放器 -->
-    <section id="music" class="section">
+    <!-- ============================================================
+         音乐播放器
+         ============================================================ -->
+    <section id="view-music" class="view" data-title="音乐">
       <div class="container">
-        <h2 class="section-title">音乐</h2>
+        <div class="page-head">
+          <h1 class="page-title">音乐</h1>
+          <p class="page-desc">把音频文件放进 <code>music/</code>，在 <code>js/config.js</code> 登记即可。</p>
+        </div>
+
         <div class="player idle">
           <div class="player-cover">
             <div id="cover" class="cover">♪</div>
@@ -75,14 +113,31 @@
             <input type="range" id="volume" min="0" max="100" value="80" />
           </div>
         </div>
-        <ul id="playlist" class="playlist"></ul>
+
+        <!-- 可折叠歌单 -->
+        <div class="playlist-box">
+          <button type="button" id="playlist-toggle" class="playlist-toggle" aria-expanded="true">
+            <span class="pl-icon">🎵</span>
+            <span class="pl-title">播放列表</span>
+            <span id="playlist-status" class="pl-status"></span>
+            <span class="caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="playlist-collapse open">
+            <ul id="playlist" class="playlist"></ul>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- 小功能：后续上线的小工具 -->
-    <section id="features" class="section">
+    <!-- ============================================================
+         小工具：仅展示已上线内容；未上线条目整体隐藏，上线后自动出现
+         ============================================================ -->
+    <section id="view-tools" class="view" data-title="小工具">
       <div class="container">
-        <h2 class="section-title">小功能</h2>
+        <div class="page-head">
+          <h1 class="page-title">小工具</h1>
+          <p id="tools-desc" class="page-desc">已上线的小工具都在这里。</p>
+        </div>
         <div id="feature-list" class="features"></div>
       </div>
     </section>
@@ -94,8 +149,14 @@
     </div>
   </footer>
 
+  <noscript>
+    <p style="text-align:center;padding:24px;">本页面需要启用 JavaScript 才能正常显示。</p>
+  </noscript>
+
   <script src="js/config.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/clock.js"></script>
+  <script src="js/router.js"></script>
   <script src="js/github.js"></script>
   <script src="js/player.js"></script>
 </body>

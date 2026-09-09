@@ -1,4 +1,6 @@
-/* 本地音乐播放器：读取 MUSIC 清单，同源加载音频文件 */
+/* 本地音乐播放器：读取 MUSIC 清单，同源加载音频文件。
+ * 歌单可折叠（点击"播放列表"标题栏展开/收起）。
+ */
 
 (function () {
   var audio = new Audio();
@@ -18,7 +20,29 @@
     cur:      document.getElementById("cur"),
     dur:      document.getElementById("dur"),
     playlist: document.getElementById("playlist"),
+    toggle:   document.getElementById("playlist-toggle"),
+    collapse: document.querySelector(".playlist-collapse"),
+    status:   document.getElementById("playlist-status"),
   };
+
+  /* ---------- 歌单折叠 ---------- */
+  function setOpen(open) {
+    if (el.collapse) el.collapse.classList.toggle("open", open);
+    if (el.toggle) el.toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  function isOpen() {
+    return el.collapse ? el.collapse.classList.contains("open") : true;
+  }
+  if (el.toggle) {
+    el.toggle.addEventListener("click", function () { setOpen(!isOpen()); });
+  }
+
+  function updateStatus(text) {
+    if (el.status) el.status.textContent = text || "";
+  }
+  function countText() {
+    return "共 " + list.length + " 首";
+  }
 
   /* 播放 / 暂停两种视觉状态：暂停时隐藏歌曲内部信息 */
   function setPlaying(playing) {
@@ -50,6 +74,7 @@
       el.cover.textContent = "♪";
     }
     renderPlaylist();
+    updateStatus("正在播放：" + song.title);
     audio.play().catch(function () { setPlaying(false); });
   }
 
@@ -96,6 +121,7 @@
     el.dur.textContent = "0:00";
     el.seek.value = 0;
     renderPlaylist();
+    updateStatus(list.length ? countText() : "");
     setPlaying(false);
   });
 
@@ -117,9 +143,13 @@
   /* 初始化 */
   if (!list.length) {
     el.player.classList.add("empty");
-    el.playlist.innerHTML = '<p class="placeholder">暂无歌曲。</p>';
+    el.playlist.innerHTML = '<li class="placeholder">暂无歌曲，请先在 js/config.js 的 MUSIC 里登记。</li>';
+    updateStatus("暂无歌曲");
+    if (el.toggle) el.toggle.disabled = true;
+    setOpen(false);
   } else {
     renderPlaylist();
+    updateStatus(countText());
   }
   setPlaying(false);
 })();
