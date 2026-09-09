@@ -11,9 +11,9 @@
 
 /* ---------- 个人信息 ---------- */
 const SITE = {
-  nickname: "你的昵称",                 // 显示在顶栏和 Hero 区
-  motto: "你的个人格言",                 // 一句格言，展示在昵称下方
-  intro: "一句话自我介绍，介绍你是谁、在做什么。",  // 可选，留空则不显示
+  nickname: "torch",                 // 显示在顶栏和 Hero 区
+  motto: "目前暂无",                 // 一句格言，展示在昵称下方
+  intro: "............",  // 可选，留空则不显示
   avatar: "",                            // 头像图片路径，如 "assets/avatar.jpg"，留空则显示昵称首字
 };
 
@@ -31,7 +31,7 @@ const GITHUB_USERNAME = "";
  * 详见 music/README.md
  * 留空则表示暂无歌曲，页面会显示简单空置状态，不影响其他内容。
  */
-const MUSIC = [];
+const MUSIC = ["music/Aimer - RE꞉I AM_L.ogg"];
 
 /* ---------- 小工具入口 ----------
  * 后续上线小游戏、图片生成等工具时，在这里登记即可。
