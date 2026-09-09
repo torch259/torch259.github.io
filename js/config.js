@@ -31,7 +31,7 @@ const GITHUB_USERNAME = "";
  * 详见 music/README.md
  * 留空则表示暂无歌曲，页面会显示简单空置状态，不影响其他内容。
  */
-const MUSIC = ["music/Aimer - RE꞉I AM_L.ogg"];
+const MUSIC = ["musicM800002BAWFy48bS3D.mp3"];  
 
 /* ---------- 小工具入口 ----------
  * 后续上线小游戏、图片生成等工具时，在这里登记即可。
