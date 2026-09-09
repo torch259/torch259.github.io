@@ -29,11 +29,9 @@ const GITHUB_USERNAME = "";
  * 每首歌的 src 指向对应文件路径，例如 "music/song1.mp3"。
  * cover 是封面图路径，留空则显示占位符号。
  * 详见 music/README.md
+ * 留空则表示暂无歌曲，页面会显示简单空置状态，不影响其他内容。
  */
-const MUSIC = [
-  { title: "示例歌曲一", artist: "示例歌手", cover: "", src: "music/song1.mp3" },
-  { title: "示例歌曲二", artist: "示例歌手", cover: "", src: "music/song2.mp3" },
-];
+const MUSIC = [];
 
 /* ---------- 小工具入口 ----------
  * 后续上线小游戏、图片生成等工具时，在这里登记即可。

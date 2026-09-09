@@ -1,5 +1,6 @@
 /* 本地音乐播放器：读取 MUSIC 清单，同源加载音频文件。
  * 歌单可折叠（点击"播放列表"标题栏展开/收起）。
+ * 无歌曲时整个播放器/歌单隐藏，只显示空置状态。
  */
 
 (function () {
@@ -8,6 +9,8 @@
   var index = -1;
 
   var el = {
+    content:  document.getElementById("music-content"),
+    empty:    document.getElementById("music-empty"),
     player:   document.querySelector(".player"),
     cover:    document.getElementById("cover"),
     title:    document.getElementById("song-title"),
@@ -22,7 +25,7 @@
     playlist: document.getElementById("playlist"),
     toggle:   document.getElementById("playlist-toggle"),
     collapse: document.querySelector(".playlist-collapse"),
-    status:   document.getElementById("playlist-status"),
+    count:    document.getElementById("playlist-count"),
   };
 
   /* ---------- 歌单折叠 ---------- */
@@ -37,14 +40,7 @@
     el.toggle.addEventListener("click", function () { setOpen(!isOpen()); });
   }
 
-  function updateStatus(text) {
-    if (el.status) el.status.textContent = text || "";
-  }
-  function countText() {
-    return "共 " + list.length + " 首";
-  }
-
-  /* 播放 / 暂停两种视觉状态：暂停时隐藏歌曲内部信息 */
+  /* 播放/暂停两种视觉状态：暂停时隐藏歌曲内部信息 */
   function setPlaying(playing) {
     el.player.classList.toggle("idle", !playing);
     el.play.textContent = playing ? "⏸" : "▶";
@@ -52,10 +48,16 @@
 
   function renderPlaylist() {
     el.playlist.innerHTML = list.map(function (song, i) {
+      var active = i === index;
+      var songBlock =
+        '<div class="song-meta">' +
+          '<span class="song-name">' + escapeHtml(song.title) + "</span>" +
+          '<span class="song-artist">' + escapeHtml(song.artist || "") + "</span>" +
+        "</div>";
       return (
-        '<li class="song' + (i === index ? " active" : "") + '" data-i="' + i + '">' +
-        '<span class="song-idx">' + (i + 1) + "</span>" +
-        '<span class="song-name">' + escapeHtml(song.title) + " — " + escapeHtml(song.artist) + "</span>" +
+        '<li class="song' + (active ? " active" : "") + '" data-i="' + i + '">' +
+          '<span class="song-index">' + (active ? '<span class="eq"><i></i><i></i><i></i></span>' : (i + 1)) + "</span>" +
+          songBlock +
         "</li>"
       );
     }).join("");
@@ -74,7 +76,6 @@
       el.cover.textContent = "♪";
     }
     renderPlaylist();
-    updateStatus("正在播放：" + song.title);
     audio.play().catch(function () { setPlaying(false); });
   }
 
@@ -111,7 +112,7 @@
   });
 
   audio.addEventListener("error", function () {
-    /* 加载失败时回到暂停态，不暴露内部文件路径 */
+    /* 加载失败时回到暂停态，不暴露任何内部信息 */
     audio.pause();
     index = -1;
     el.title.textContent = "";
@@ -121,7 +122,6 @@
     el.dur.textContent = "0:00";
     el.seek.value = 0;
     renderPlaylist();
-    updateStatus(list.length ? countText() : "");
     setPlaying(false);
   });
 
@@ -140,16 +140,18 @@
     if (li) load(parseInt(li.dataset.i, 10));
   });
 
-  /* 初始化 */
+  /* ---------- 初始化 ---------- */
   if (!list.length) {
-    el.player.classList.add("empty");
-    el.playlist.innerHTML = '<li class="placeholder">暂无歌曲，请先在 js/config.js 的 MUSIC 里登记。</li>';
-    updateStatus("暂无歌曲");
-    if (el.toggle) el.toggle.disabled = true;
-    setOpen(false);
-  } else {
-    renderPlaylist();
-    updateStatus(countText());
+    // 无歌曲：隐藏播放器与歌单，显示空置状态
+    if (el.content) el.content.style.display = "none";
+    if (el.empty) {
+      el.empty.hidden = false;
+      el.empty.textContent = "暂无内容";
+    }
+    return;
   }
+
+  if (el.count) el.count.textContent = list.length + " 首";
+  renderPlaylist();
   setPlaying(false);
 })();

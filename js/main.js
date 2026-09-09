@@ -58,7 +58,8 @@ function fmtTime(t) {
         "</span>";
     }).join("");
   } else {
-    hobBox.innerHTML = '<p class="placeholder">还没有填写爱好，去 <code>js/config.js</code> 的 HOBBIES 里加几条吧。</p>';
+    // 无内容：简单空置，不暴露内部配置路径
+    hobBox.innerHTML = '<p class="empty-hint">暂无内容</p>';
   }
 
   /* ---------- 小工具：只渲染已上线（done: true）的内容 ---------- */
@@ -77,11 +78,8 @@ function fmtTime(t) {
       return '<div class="feature">' + body + "</div>";
     }).join("");
   } else {
-    featureEl.innerHTML =
-      '<div class="placeholder-box">' +
-      '<p class="placeholder">还没有上线的小工具。</p>' +
-      '<p class="placeholder">在 <code>js/config.js</code> 的 FEATURES 里把某项 <code>done</code> 改为 <code>true</code> 并填好 link，这里和顶栏会自动显示。</p>' +
-      "</div>";
+    // 无内容：简单空置，不暴露内部配置路径
+    featureEl.innerHTML = '<p class="empty-hint">暂无内容</p>';
   }
 
   // 未上线时：隐藏顶栏"小工具"入口与首页入口卡片；有上线内容才显示

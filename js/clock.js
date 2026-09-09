@@ -1,4 +1,4 @@
-/* 首页顶部组件：实时时钟（每秒刷新）+ 月历（可翻月 / 回到今天 / 点选日期） */
+/* 首页顶部组件：实时时钟（每秒刷新）+ 矩阵式月历（7×6 固定网格） */
 
 (function () {
   var clockEl = document.getElementById("clock");
@@ -25,18 +25,20 @@
     var d = new Date();
     var w = WEEK[(d.getDay() + 6) % 7]; // 周一为一周开头
     clockEl.innerHTML =
+      '<div class="clock-top">' +
+        '<span class="clock-week">星期' + w + '</span>' +
+        '<span class="clock-date">' + d.getMonth() + "月" + d.getDate() + "日</span>" +
+      "</div>" +
       '<div class="clock-time">' +
         fmt2(d.getHours()) + ":" + fmt2(d.getMinutes()) +
         '<span class="clock-sec">:' + fmt2(d.getSeconds()) + "</span>" +
       "</div>" +
-      '<div class="clock-date">' + d.getFullYear() + "年" + (d.getMonth() + 1) +
-        "月" + d.getDate() + "日 · 星期" + w + "</div>" +
       '<div class="clock-greet">' + greeting(d.getHours()) + "，" + nickname + "</div>";
   }
   tick();
   setInterval(tick, 1000);
 
-  /* ---------- 月历 ---------- */
+  /* ---------- 矩阵式月历（固定 7×6 网格，邻接月日期占位、可点击跨月） ---------- */
   var today = new Date();
   var viewY = today.getFullYear();   // 当前展示的年份
   var viewM = today.getMonth();      // 当前展示的月份（0 起）
@@ -50,27 +52,34 @@
   }
 
   function renderCalendar() {
-    var first = new Date(viewY, viewM, 1);
-    var offset = (first.getDay() + 6) % 7;          // 月首前留白（周一开头）
-    var daysInMonth = new Date(viewY, viewM + 1, 0).getDate();
+    var m = viewM, y = viewY;
+    var first = new Date(y, m, 1);
+    var startOffset = (first.getDay() + 6) % 7; // 周一开头前的留白格数
+    var rows = 6;                               // 固定 6 行，构成 7×6 矩阵
 
     var cells = "";
-    for (var i = 0; i < offset; i++) {
-      cells += '<span class="day blank"></span>';
-    }
-    for (var d = 1; d <= daysInMonth; d++) {
-      var dt = new Date(viewY, viewM, d);
+    for (var idx = 0; idx < rows * 7; idx++) {
+      var cellDate = new Date(y, m, 1 - startOffset + idx);
+      var inMonth = cellDate.getMonth() === m;
       var cls = "day";
-      if (dt.getDay() === 0 || dt.getDay() === 6) cls += " weekend";
-      if (isSameDay(dt, today)) cls += " today";
-      if (sel && sel.y === viewY && sel.m === viewM && sel.d === d) cls += " sel";
-      cells += '<button type="button" class="' + cls + '" data-d="' + d + '">' + d + "</button>";
+      if (!inMonth) cls += " out";                          // 邻接月日期（占位，弱化）
+      if (cellDate.getDay() === 0 || cellDate.getDay() === 6) cls += " weekend";
+      if (isSameDay(cellDate, today)) cls += " today";
+      if (sel && cellDate.getFullYear() === sel.y &&
+          cellDate.getMonth() === sel.m && cellDate.getDate() === sel.d) cls += " sel";
+      cells +=
+        '<button type="button" class="' + cls + '"' +
+        ' data-y="' + cellDate.getFullYear() + '"' +
+        ' data-m="' + cellDate.getMonth() + '"' +
+        ' data-d="' + cellDate.getDate() + '">' +
+        cellDate.getDate() +
+        "</button>";
     }
 
     calEl.innerHTML =
       '<div class="cal-head">' +
         '<button type="button" class="cal-nav" data-nav="-1" title="上个月">‹</button>' +
-        '<div class="cal-title">' + viewY + "年 " + (viewM + 1) + "月</div>" +
+        '<div class="cal-title">' + y + "年 " + (m + 1) + "月</div>" +
         '<button type="button" class="cal-nav" data-nav="1" title="下个月">›</button>' +
       "</div>" +
       '<div class="cal-week">' +
@@ -78,7 +87,7 @@
           return '<span class="' + (w === "六" || w === "日" ? "weekend" : "") + '">' + w + "</span>";
         }).join("") +
       "</div>" +
-      '<div class="cal-grid">' + cells + "</div>" +
+      '<div class="cal-matrix">' + cells + "</div>" +
       '<div class="cal-foot">' +
         '<button type="button" class="cal-today" title="回到今天">回到今天</button>' +
       "</div>";
@@ -102,9 +111,13 @@
       renderCalendar();
       return;
     }
-    var dayBtn = t.closest ? t.closest(".day") : null;
-    if (dayBtn) {
-      sel = { y: viewY, m: viewM, d: parseInt(dayBtn.getAttribute("data-d"), 10) };
+    var cell = t.closest ? t.closest(".day") : null;
+    if (cell) {
+      var cy = parseInt(cell.getAttribute("data-y"), 10);
+      var cm = parseInt(cell.getAttribute("data-m"), 10);
+      var cd = parseInt(cell.getAttribute("data-d"), 10);
+      if (cm !== viewM) { viewY = cy; viewM = cm; }   // 点邻接日期会跳到对应月份
+      sel = { y: cy, m: cm, d: cd };
       renderCalendar();
     }
   });
