@@ -12,8 +12,17 @@
 | TX-NOISE | （推荐内联 SVG data-URI） | body::after | 矢量 | svg | 3KB | 待生成 | — | 程序化 |
 | TX-HALFTONE | （推荐内联 SVG data-URI） | 强调色块/按钮 | 矢量 | svg | 3KB | 待生成 | — | 程序化 |
 | TX-STRIKE | （推荐内联 SVG data-URI） | 斜条纹分隔/标签 | 矢量 | svg | 3KB | 待生成 | — | 程序化 |
+| TX-WATERFLOW | assets/textures/water-flow.png | html::before（顶部水面流动） | 384×384 平铺 | png | 40KB | 已挂接 | tools/gen_water_assets.py | 程序化原创 |
+| TX-HALFTONE-FADE | assets/textures/halftone-fade.png | 备用（当前未引用） | 256×256 | png | 5KB | 已生成 | tools/gen_textures.py | 程序化原创 |
+| TX-NOISE-PNG | assets/textures/noise.png | 备用（当前未引用） | 128×128 平铺 | png | 15KB | 已生成 | tools/gen_textures.py | 程序化原创 |
+| TX-RAY | assets/textures/ray-red.png | 备用（当前未引用） | 512×512 | png | 26KB | 已生成 | tools/gen_textures.py | 程序化原创 |
+| TX-STRIPE | assets/textures/stripe-red.png | 备用（当前未引用） | 24×24 平铺 | png | 0.2KB | 已生成 | tools/gen_textures.py | 程序化原创 |
 | FNT-DISPLAY | assets/fonts/display-latin.woff2 | 标题/时钟数字 | — | woff2 | 200KB | 待生成 | — | OFL 开源（如 Bebas Neue/Anton/Oswald） |
 | FNT-CJK | assets/fonts/cjk-*.woff2（子集化） | 中文标题/正文 | — | woff2 | ≤1MB/套 | 待生成 | — | OFL 开源（Noto Sans SC 等） |
+
+> **水泡不使用贴图**：静态纹理无法表达"随时间淡入淡出"的生命周期（实测会把运动路径烘焙成一串重叠圆环，
+> 见已废弃方案）。水泡改由 `index.html` 的纯背景装饰层 `.water-fx`（12 个 `<i>`）+ CSS 动画实现，
+> 每颗气泡拥有独立的位置/直径/上浮时长/生死周期，见 `css/style.css`「水泡装饰层」章节。
 
 ## 增补说明（记录新素材怎么加）
 - 新素材 = 新增一行 + `prompts/` 存档 + 挂点必须能在 `index.html` 找到对应元素/选择器；
