@@ -50,7 +50,7 @@ body {
 
 /* 水体色板（取自参考图：青白水面 → 亮蓝 → 深钴蓝） */
 html {
-  background: #05176b;                    /* 兜底底色，避免首帧白闪 */
+  background: #eef1f7;                    /* 斜下角留白露出的底色（即原页面浅灰蓝底） */
   --water-foam: #e2f9ff;
   --water-glow: #7fe4ff;
   --water-shallow: #2ab4f0;
@@ -59,8 +59,8 @@ html {
   --water-abyss: #05176b;
 }
 
-/* 4 个图层共用：铺满视口 / 不吃鼠标事件 */
-html::before, html::after,
+/* 背景图层共用：铺满视口 / 不吃鼠标事件（顶部波光层已按需求删除） */
+html::after,
 body::before, body::after {
   content: "";
   position: fixed;
@@ -69,130 +69,105 @@ body::before, body::after {
   z-index: -1;                            /* 逐个再覆盖；负值=在主体内容之后 */
 }
 
-/* ---- ① 水体本体：负责「竖直向下切入 + 小幅回弹」 ---- */
+/* ---- ① 水体：斜矩形（整体旋转 -14°），沿「左上 → 右下」斜方向切入；落位后右下角永久留白 ---- */
 body::before {
+  left: -30%;                             /* 比视口大：保证旋转后左上/右上/左下仍被盖满 */
+  top: -45%;
+  right: auto;
+  bottom: auto;
+  width: 160%;
+  height: 150%;
   z-index: -4;
-  border-top: 2px solid rgba(226, 249, 255, 0.55);      /* 水面白边 */
-  border-bottom: 2px solid rgba(226, 249, 255, 0.9);    /* 下切时拖在最前的水线 */
-  box-shadow: 0 0 28px rgba(127, 228, 255, 0.5);        /* 下切前缘的冷光 */
+  border-bottom: 2px solid rgba(226, 249, 255, 0.9);    /* 斜切前沿拖着的亮水线 */
+  box-shadow: 0 0 30px rgba(127, 228, 255, 0.5);        /* 前沿冷光 */
   background:
-    /* 顶部水面辉光 */
+    /* 水面辉光：水体自身顶边在画外，辉光落在视口上沿（随斜矩形一起是斜的） */
     linear-gradient(180deg,
-      rgba(226, 249, 255, 0.95) 0%,
-      rgba(127, 228, 255, 0.5) 3%,
-      rgba(127, 228, 255, 0) 12%),
+      rgba(226, 249, 255, 0) 27%,
+      rgba(226, 249, 255, 0.65) 31%,
+      rgba(127, 228, 255, 0.3) 36%,
+      rgba(127, 228, 255, 0) 44%),
     /* 深水压角：右下最暗，贴合参考图 */
-    radial-gradient(130% 95% at 90% 105%, rgba(2, 10, 52, 0.82), rgba(2, 10, 52, 0) 62%),
-    /* 水体纵向渐变 */
+    radial-gradient(120% 80% at 72% 88%, rgba(2, 10, 52, 0.82), rgba(2, 10, 52, 0) 62%),
+    /* 水体纵向渐变（视口上沿约在自身 30% 处，所以亮部前置） */
     linear-gradient(180deg,
-      var(--water-shallow) 0%,
-      #1a8ce6 12%,
-      var(--water-mid) 34%,
-      #0e3fb8 58%,
-      var(--water-deep) 78%,
+      #2ab4f0 30%,
+      #1a8ce6 40%,
+      var(--water-mid) 55%,
+      #0e3fb8 72%,
+      var(--water-deep) 87%,
       var(--water-abyss) 100%);
   will-change: transform;
-  animation: waterCut 1.05s both;
+  animation: waterCut 1.2s both;
 }
 
-/* ---- ② 水面波光：顶部约 40vh 的硬边横向波浪，落位后缓慢流动 ---- */
-html::before {
-  right: -520px;                          /* 多留一个平铺宽度，流动时不留缝 */
-  bottom: auto;
-  height: 40vh;
-  z-index: -3;
-  /* 参考图水面：细长硬边波浪（椭圆极扁 + 近乎硬切），而非柔光圆斑 */
-  background-image:
-    radial-gradient(ellipse 34% 8% at 22% 20%, rgba(255, 255, 255, 0.92) 0 90%, rgba(255, 255, 255, 0) 93%),
-    radial-gradient(ellipse 22% 5% at 58% 12%, rgba(226, 249, 255, 0.80) 0 90%, rgba(226, 249, 255, 0) 93%),
-    radial-gradient(ellipse 30% 6% at 84% 34%, rgba(190, 244, 255, 0.72) 0 90%, rgba(190, 244, 255, 0) 93%),
-    radial-gradient(ellipse 17% 4% at 40% 45%, rgba(255, 255, 255, 0.68) 0 90%, rgba(255, 255, 255, 0) 93%),
-    radial-gradient(ellipse 26% 5% at 8% 58%, rgba(226, 249, 255, 0.55) 0 90%, rgba(226, 249, 255, 0) 93%),
-    radial-gradient(ellipse 12% 3% at 68% 68%, rgba(190, 244, 255, 0.5) 0 90%, rgba(190, 244, 255, 0) 93%),
-    radial-gradient(ellipse 9% 2.5% at 46% 78%, rgba(255, 255, 255, 0.42) 0 90%, rgba(255, 255, 255, 0) 93%);
-  background-size: 520px 40vh;            /* 横向平铺，位移一个周期即无缝 */
-  background-repeat: repeat-x;
-  mix-blend-mode: screen;                 /* 波光叠加、提亮水面 */
-  -webkit-mask-image: linear-gradient(180deg, #000 0 62%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 0 62%, transparent 100%);
-  opacity: 0;
-  will-change: transform;
-  animation:
-    causticIn 0.5s ease-out 0.5s both,    /* 水面落位时淡入 */
-    causticDrift 26s linear 1.05s infinite;
-}
+/* ---- ② 顶部椭圆波光：按要求删除，此图层不再使用 ----
+   （原先的扁椭圆"水面波纹"意义不明，已整块移除；水体只保留纵向渐变与顶部辉光） */
 
-/* ---- ③ 水泡：稀疏细密，随下切出现并持续上浮 ---- */
+/* ---- ③ 水泡（小）：正圆气泡，自下而上漂浮，越往上越淡直至消失 ---- */
 body::after {
-  bottom: -720px;                         /* 留出一个整周期，上浮不留缝 */
+  bottom: -960px;                         /* 留出两个整周期，上浮过程不留缝 */
   z-index: -2;
   background-image:
-    radial-gradient(circle 2.5px at 14% 18%, rgba(255, 255, 255, 0.95) 0 55%, rgba(190, 244, 255, 0.45) 72%, rgba(190, 244, 255, 0) 100%),
-    radial-gradient(circle 4px at 62% 44%, rgba(255, 255, 255, 0.90) 0 52%, rgba(190, 244, 255, 0.40) 70%, rgba(190, 244, 255, 0) 100%),
-    radial-gradient(circle 2px at 34% 76%, rgba(255, 255, 255, 0.85) 0 55%, rgba(190, 244, 255, 0.35) 72%, rgba(190, 244, 255, 0) 100%),
-    radial-gradient(circle 5px at 76% 26%, rgba(255, 255, 255, 0.90) 0 50%, rgba(190, 244, 255, 0.40) 68%, rgba(190, 244, 255, 0) 100%),
-    radial-gradient(circle 3px at 22% 62%, rgba(255, 255, 255, 0.85) 0 52%, rgba(190, 244, 255, 0.35) 70%, rgba(190, 244, 255, 0) 100%),
-    radial-gradient(circle 2.5px at 48% 90%, rgba(255, 255, 255, 0.85) 0 55%, rgba(190, 244, 255, 0.35) 72%, rgba(190, 244, 255, 0) 100%);
-  background-size: 240px 240px, 360px 360px;   /* 两种周期交替 → 疏密不均 */
+    /* 正圆气泡：半透明泡体 + 一圈更亮的边缘（贴近参考图质感） */
+    radial-gradient(circle 15px at 16% 12%, rgba(226, 249, 255, 0.30) 0 64%, rgba(255, 255, 255, 0.85) 69% 82%, rgba(255, 255, 255, 0) 87%),
+    radial-gradient(circle 7px at 64% 34%, rgba(226, 249, 255, 0.32) 0 64%, rgba(255, 255, 255, 0.85) 69% 82%, rgba(255, 255, 255, 0) 87%),
+    radial-gradient(circle 4px at 34% 60%, rgba(226, 249, 255, 0.34) 0 64%, rgba(255, 255, 255, 0.80) 69% 82%, rgba(255, 255, 255, 0) 87%),
+    radial-gradient(circle 11px at 86% 78%, rgba(226, 249, 255, 0.26) 0 64%, rgba(255, 255, 255, 0.80) 69% 82%, rgba(255, 255, 255, 0) 87%);
+  background-size: 480px 480px;
   background-repeat: repeat;
+  /* 淡出写在空间上：底部浮现 → 中段最清楚 → 顶部化开消失 */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0 6%, #000 26% 72%, transparent 96% 100%);
+  mask-image: linear-gradient(180deg, transparent 0 6%, #000 26% 72%, transparent 96% 100%);
   opacity: 0;
   animation:
-    bubbleFade 0.8s ease-out 0.3s both,   /* 下切过程中淡入 */
-    bubbleRise 18s linear 0.3s infinite;
+    bubbleIn 0.8s ease-out 0.3s both,
+    bubbleRise 22s linear 0.3s infinite;
 }
 
-/* ---- ④ 悬浮碎片 + 大气泡：慢速漂浮，撑出纵深 ---- */
+/* ---- ④ 大气泡：更大更慢，同样自下而上并逐渐消失 ---- */
 html::after {
-  bottom: -900px;
+  bottom: -1240px;                        /* 620×2，正好整周期 */
   z-index: -1;
   background-image:
-    radial-gradient(circle 6px at 18% 34%, rgba(255, 255, 255, 0.55) 0 45%, rgba(190, 244, 255, 0.28) 68%, rgba(190, 244, 255, 0) 100%),
-    radial-gradient(circle 2px at 66% 12%, rgba(190, 244, 255, 0.80) 0 60%, rgba(190, 244, 255, 0) 100%),
-    radial-gradient(circle 1.5px at 42% 58%, rgba(226, 249, 255, 0.70) 0 60%, rgba(226, 249, 255, 0) 100%),
-    radial-gradient(circle 8px at 78% 70%, rgba(255, 255, 255, 0.50) 0 45%, rgba(190, 244, 255, 0.25) 68%, rgba(190, 244, 255, 0) 100%),
-    radial-gradient(circle 2px at 30% 82%, rgba(190, 244, 255, 0.75) 0 60%, rgba(190, 244, 255, 0) 100%),
-    radial-gradient(circle 1.5px at 56% 40%, rgba(226, 249, 255, 0.65) 0 60%, rgba(226, 249, 255, 0) 100%);
-  background-size: 300px 300px, 450px 450px;
+    radial-gradient(circle 30px at 22% 18%, rgba(226, 249, 255, 0.22) 0 68%, rgba(255, 255, 255, 0.78) 72% 83%, rgba(255, 255, 255, 0) 88%),
+    radial-gradient(circle 19px at 74% 54%, rgba(226, 249, 255, 0.24) 0 68%, rgba(255, 255, 255, 0.75) 72% 83%, rgba(255, 255, 255, 0) 88%),
+    radial-gradient(circle 9px at 46% 86%, rgba(226, 249, 255, 0.28) 0 66%, rgba(255, 255, 255, 0.78) 70% 82%, rgba(255, 255, 255, 0) 87%);
+  background-size: 620px 620px;
   background-repeat: repeat;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0 6%, #000 26% 72%, transparent 96% 100%);
+  mask-image: linear-gradient(180deg, transparent 0 6%, #000 26% 72%, transparent 96% 100%);
   opacity: 0;
   animation:
-    shardFade 1s ease-out 0.6s both,
-    shardDrift 34s linear 0.6s infinite;
+    bubbleIn 1s ease-out 0.6s both,
+    bubbleRiseSlow 34s linear 0.6s infinite;
 }
 
 /* ---- 关键帧 ---- */
-/* 下切 + 回弹：冲过头 → 回弹 → 微沉 → 归位 */
+/* 斜向切入 + 回弹：沿「左上 → 右下」方向冲过头，再小幅回弹、微沉、归位 */
 @keyframes waterCut {
-  0%   { transform: translateY(-100%); animation-timing-function: cubic-bezier(.30, .90, .20, 1); }
-  58%  { transform: translateY(2.4%);  animation-timing-function: cubic-bezier(.30, 0, .55, 1); }
-  76%  { transform: translateY(-1.15%); animation-timing-function: cubic-bezier(.30, 0, .55, 1); }
-  89%  { transform: translateY(0.45%);  animation-timing-function: cubic-bezier(.30, 0, .55, 1); }
-  100% { transform: translateY(0); }
+  0%   { transform: translate3d(-145vw, -78vh, 0) rotate(-14deg); animation-timing-function: cubic-bezier(.35, .75, .25, 1); }
+  52%  { transform: translate3d(2.2vw, 2.6vh, 0) rotate(-14deg);   animation-timing-function: cubic-bezier(.30, 0, .55, 1); }
+  72%  { transform: translate3d(-1.1vw, -1.3vh, 0) rotate(-14deg); animation-timing-function: cubic-bezier(.30, 0, .55, 1); }
+  88%  { transform: translate3d(0.45vw, 0.55vh, 0) rotate(-14deg); animation-timing-function: cubic-bezier(.30, 0, .55, 1); }
+  100% { transform: translate3d(0, 0, 0) rotate(-14deg); }
 }
-@keyframes causticIn { from { opacity: 0; } to { opacity: 0.95; } }
-/* 波光横向流动：位移正好一个平铺周期 → 无缝循环（只动 transform，走合成层） */
-@keyframes causticDrift {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-520px); }
-}
-@keyframes bubbleFade { from { opacity: 0; } to { opacity: 0.9; } }
+@keyframes bubbleIn { from { opacity: 0; } to { opacity: 1; } }
+/* 上浮：位移正好两个平铺周期 → 无缝循环（只动 transform，走合成层） */
 @keyframes bubbleRise {
   from { transform: translateY(0); }
-  to   { transform: translateY(-720px); }   /* 240×3 = 360×2，正好整周期 */
+  to   { transform: translateY(-960px); }    /* 480×2 */
 }
-@keyframes shardFade { from { opacity: 0; } to { opacity: 0.85; } }
-@keyframes shardDrift {
-  0%   { transform: translate3d(0, 0, 0); }
-  50%  { transform: translate3d(-14px, -450px, 0); }
-  100% { transform: translate3d(0, -900px, 0); }   /* 300×3 = 450×2，正好整周期 */
+@keyframes bubbleRiseSlow {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-1240px); }   /* 620×2 */
 }
 
-/* 系统开启「减少动态效果」：直接呈现静态水面，不做下切与漂浮 */
+/* 系统开启「减少动态效果」：直接呈现静态水面与气泡，不做下切与上浮 */
 @media (prefers-reduced-motion: reduce) {
   body::before { animation: none !important; }
-  html::before { animation: none !important; opacity: 0.95; }
-  body::after  { animation: none !important; opacity: 0.9; }
-  html::after  { animation: none !important; opacity: 0.85; }
+  body::after  { animation: none !important; opacity: 1; }
+  html::after  { animation: none !important; opacity: 1; }
 }
 
 a { color: var(--accent); }
