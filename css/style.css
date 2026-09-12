@@ -30,13 +30,171 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  background:
-    radial-gradient(1200px 600px at 100% -10%, rgba(139, 92, 246, 0.10), transparent 60%),
-    radial-gradient(1000px 500px at -10% 10%, rgba(99, 102, 241, 0.10), transparent 55%),
-    var(--bg);
+  /* 背景改由下方「动态水体背景」的 4 个伪元素图层承担（原浅色渐变已移除） */
+  background: transparent;
   color: var(--fg);
   line-height: 1.6;
 }
+
+/* ============================================
+   动态水体背景（参考图：水下主视觉 —— 顶部青白波光 / 水体渐深至钴蓝）
+   ------------------------------------------------------------
+   · 纯 CSS，不改 DOM、不动 JS：全部由 4 个伪元素图层承担，固定在视口
+     最底层（z-index 负值），因此都落在「主体内容之后」
+   · 时序：水体自上方竖直向下切入（约 0.6s 落位）→ 冲过头 2.4vh
+     → 小幅回弹 -1.15vh → 0.45vh → 归位（总时长 1.05s）
+   · 水泡随下切过程（0.3s 起）淡入并持续上浮；碎片/大气泡稍后淡入
+   · 想停用动效：删掉这 4 个伪元素的 animation 即可，
+     系统开启「减少动态效果」时也会自动静止成静态水面
+   ============================================ */
+
+/* 水体色板（取自参考图：青白水面 → 亮蓝 → 深钴蓝） */
+html {
+  background: #05176b;                    /* 兜底底色，避免首帧白闪 */
+  --water-foam: #e2f9ff;
+  --water-glow: #7fe4ff;
+  --water-shallow: #2ab4f0;
+  --water-mid: #1257d8;
+  --water-deep: #0b2a9c;
+  --water-abyss: #05176b;
+}
+
+/* 4 个图层共用：铺满视口 / 不吃鼠标事件 */
+html::before, html::after,
+body::before, body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;                            /* 逐个再覆盖；负值=在主体内容之后 */
+}
+
+/* ---- ① 水体本体：负责「竖直向下切入 + 小幅回弹」 ---- */
+body::before {
+  z-index: -4;
+  border-top: 2px solid rgba(226, 249, 255, 0.55);      /* 水面白边 */
+  border-bottom: 2px solid rgba(226, 249, 255, 0.9);    /* 下切时拖在最前的水线 */
+  box-shadow: 0 0 28px rgba(127, 228, 255, 0.5);        /* 下切前缘的冷光 */
+  background:
+    /* 顶部水面辉光 */
+    linear-gradient(180deg,
+      rgba(226, 249, 255, 0.95) 0%,
+      rgba(127, 228, 255, 0.5) 3%,
+      rgba(127, 228, 255, 0) 12%),
+    /* 深水压角：右下最暗，贴合参考图 */
+    radial-gradient(130% 95% at 90% 105%, rgba(2, 10, 52, 0.82), rgba(2, 10, 52, 0) 62%),
+    /* 水体纵向渐变 */
+    linear-gradient(180deg,
+      var(--water-shallow) 0%,
+      #1a8ce6 12%,
+      var(--water-mid) 34%,
+      #0e3fb8 58%,
+      var(--water-deep) 78%,
+      var(--water-abyss) 100%);
+  will-change: transform;
+  animation: waterCut 1.05s both;
+}
+
+/* ---- ② 水面波光：顶部约 40vh 的硬边横向波浪，落位后缓慢流动 ---- */
+html::before {
+  right: -520px;                          /* 多留一个平铺宽度，流动时不留缝 */
+  bottom: auto;
+  height: 40vh;
+  z-index: -3;
+  /* 参考图水面：细长硬边波浪（椭圆极扁 + 近乎硬切），而非柔光圆斑 */
+  background-image:
+    radial-gradient(ellipse 34% 8% at 22% 20%, rgba(255, 255, 255, 0.92) 0 90%, rgba(255, 255, 255, 0) 93%),
+    radial-gradient(ellipse 22% 5% at 58% 12%, rgba(226, 249, 255, 0.80) 0 90%, rgba(226, 249, 255, 0) 93%),
+    radial-gradient(ellipse 30% 6% at 84% 34%, rgba(190, 244, 255, 0.72) 0 90%, rgba(190, 244, 255, 0) 93%),
+    radial-gradient(ellipse 17% 4% at 40% 45%, rgba(255, 255, 255, 0.68) 0 90%, rgba(255, 255, 255, 0) 93%),
+    radial-gradient(ellipse 26% 5% at 8% 58%, rgba(226, 249, 255, 0.55) 0 90%, rgba(226, 249, 255, 0) 93%),
+    radial-gradient(ellipse 12% 3% at 68% 68%, rgba(190, 244, 255, 0.5) 0 90%, rgba(190, 244, 255, 0) 93%),
+    radial-gradient(ellipse 9% 2.5% at 46% 78%, rgba(255, 255, 255, 0.42) 0 90%, rgba(255, 255, 255, 0) 93%);
+  background-size: 520px 40vh;            /* 横向平铺，位移一个周期即无缝 */
+  background-repeat: repeat-x;
+  mix-blend-mode: screen;                 /* 波光叠加、提亮水面 */
+  -webkit-mask-image: linear-gradient(180deg, #000 0 62%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0 62%, transparent 100%);
+  opacity: 0;
+  will-change: transform;
+  animation:
+    causticIn 0.5s ease-out 0.5s both,    /* 水面落位时淡入 */
+    causticDrift 26s linear 1.05s infinite;
+}
+
+/* ---- ③ 水泡：稀疏细密，随下切出现并持续上浮 ---- */
+body::after {
+  bottom: -720px;                         /* 留出一个整周期，上浮不留缝 */
+  z-index: -2;
+  background-image:
+    radial-gradient(circle 2.5px at 14% 18%, rgba(255, 255, 255, 0.95) 0 55%, rgba(190, 244, 255, 0.45) 72%, rgba(190, 244, 255, 0) 100%),
+    radial-gradient(circle 4px at 62% 44%, rgba(255, 255, 255, 0.90) 0 52%, rgba(190, 244, 255, 0.40) 70%, rgba(190, 244, 255, 0) 100%),
+    radial-gradient(circle 2px at 34% 76%, rgba(255, 255, 255, 0.85) 0 55%, rgba(190, 244, 255, 0.35) 72%, rgba(190, 244, 255, 0) 100%),
+    radial-gradient(circle 5px at 76% 26%, rgba(255, 255, 255, 0.90) 0 50%, rgba(190, 244, 255, 0.40) 68%, rgba(190, 244, 255, 0) 100%),
+    radial-gradient(circle 3px at 22% 62%, rgba(255, 255, 255, 0.85) 0 52%, rgba(190, 244, 255, 0.35) 70%, rgba(190, 244, 255, 0) 100%),
+    radial-gradient(circle 2.5px at 48% 90%, rgba(255, 255, 255, 0.85) 0 55%, rgba(190, 244, 255, 0.35) 72%, rgba(190, 244, 255, 0) 100%);
+  background-size: 240px 240px, 360px 360px;   /* 两种周期交替 → 疏密不均 */
+  background-repeat: repeat;
+  opacity: 0;
+  animation:
+    bubbleFade 0.8s ease-out 0.3s both,   /* 下切过程中淡入 */
+    bubbleRise 18s linear 0.3s infinite;
+}
+
+/* ---- ④ 悬浮碎片 + 大气泡：慢速漂浮，撑出纵深 ---- */
+html::after {
+  bottom: -900px;
+  z-index: -1;
+  background-image:
+    radial-gradient(circle 6px at 18% 34%, rgba(255, 255, 255, 0.55) 0 45%, rgba(190, 244, 255, 0.28) 68%, rgba(190, 244, 255, 0) 100%),
+    radial-gradient(circle 2px at 66% 12%, rgba(190, 244, 255, 0.80) 0 60%, rgba(190, 244, 255, 0) 100%),
+    radial-gradient(circle 1.5px at 42% 58%, rgba(226, 249, 255, 0.70) 0 60%, rgba(226, 249, 255, 0) 100%),
+    radial-gradient(circle 8px at 78% 70%, rgba(255, 255, 255, 0.50) 0 45%, rgba(190, 244, 255, 0.25) 68%, rgba(190, 244, 255, 0) 100%),
+    radial-gradient(circle 2px at 30% 82%, rgba(190, 244, 255, 0.75) 0 60%, rgba(190, 244, 255, 0) 100%),
+    radial-gradient(circle 1.5px at 56% 40%, rgba(226, 249, 255, 0.65) 0 60%, rgba(226, 249, 255, 0) 100%);
+  background-size: 300px 300px, 450px 450px;
+  background-repeat: repeat;
+  opacity: 0;
+  animation:
+    shardFade 1s ease-out 0.6s both,
+    shardDrift 34s linear 0.6s infinite;
+}
+
+/* ---- 关键帧 ---- */
+/* 下切 + 回弹：冲过头 → 回弹 → 微沉 → 归位 */
+@keyframes waterCut {
+  0%   { transform: translateY(-100%); animation-timing-function: cubic-bezier(.30, .90, .20, 1); }
+  58%  { transform: translateY(2.4%);  animation-timing-function: cubic-bezier(.30, 0, .55, 1); }
+  76%  { transform: translateY(-1.15%); animation-timing-function: cubic-bezier(.30, 0, .55, 1); }
+  89%  { transform: translateY(0.45%);  animation-timing-function: cubic-bezier(.30, 0, .55, 1); }
+  100% { transform: translateY(0); }
+}
+@keyframes causticIn { from { opacity: 0; } to { opacity: 0.95; } }
+/* 波光横向流动：位移正好一个平铺周期 → 无缝循环（只动 transform，走合成层） */
+@keyframes causticDrift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-520px); }
+}
+@keyframes bubbleFade { from { opacity: 0; } to { opacity: 0.9; } }
+@keyframes bubbleRise {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-720px); }   /* 240×3 = 360×2，正好整周期 */
+}
+@keyframes shardFade { from { opacity: 0; } to { opacity: 0.85; } }
+@keyframes shardDrift {
+  0%   { transform: translate3d(0, 0, 0); }
+  50%  { transform: translate3d(-14px, -450px, 0); }
+  100% { transform: translate3d(0, -900px, 0); }   /* 300×3 = 450×2，正好整周期 */
+}
+
+/* 系统开启「减少动态效果」：直接呈现静态水面，不做下切与漂浮 */
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none !important; }
+  html::before { animation: none !important; opacity: 0.95; }
+  body::after  { animation: none !important; opacity: 0.9; }
+  html::after  { animation: none !important; opacity: 0.85; }
+}
+
 a { color: var(--accent); }
 code { background: #eef1f5; padding: 1px 5px; border-radius: 4px; font-size: 0.9em; }
 button { font-family: inherit; }
